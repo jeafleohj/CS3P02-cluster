@@ -34,7 +34,6 @@ end
 $install_common_tools = <<-SCRIPT
 # bridged traffic to iptables is enabled for kube-router.
 cat >> /etc/ufw/sysctl.conf <<EOF
-net/bridge/bridge-nf-call-ip6tables = 1
 net/bridge/bridge-nf-call-iptables = 1
 net/bridge/bridge-nf-call-arptables = 1
 EOF
@@ -45,13 +44,11 @@ sed -i '/swap/d' /etc/fstab
 
 # Install kubeadm, kubectl and kubelet
 export DEBIAN_FRONTEND=noninteractive
-apt-get -qq install ebtables ethtool
 apt-get -qq update
-apt-get -qq install -y docker.io apt-transport-https curl
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
-deb http://apt.kubernetes.io/ kubernetes-xenial main
-EOF
+apt-get -qq install -y ebtables ethtool
+apt-get -qq install -y docker.io apt-transport-https ca-certificates curl
+curl -s /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 apt-get -qq update
 apt-get -qq install -y kubelet kubeadm kubectl
 SCRIPT
