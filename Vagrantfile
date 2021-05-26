@@ -47,8 +47,8 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get -qq update
 apt-get -qq install -y ebtables ethtool
 apt-get -qq install -y docker.io apt-transport-https ca-certificates curl
-curl -s /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg --output /usr/share/keyrings/kubernetes-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 apt-get -qq update
 apt-get -qq install -y kubelet kubeadm kubectl
 SCRIPT
