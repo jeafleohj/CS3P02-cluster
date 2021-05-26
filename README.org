@@ -1,0 +1,5 @@
+#+title: Cluster
+* Vagrant
+- Create vms :: ~vagrant up~
+- Delete vms :: ~vagrant down~
+- Connect to vm :: ~vagrant ssh vmname~
