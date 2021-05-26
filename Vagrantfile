@@ -1,7 +1,7 @@
 Vagrant.configure("2") do |config|
   config.vm.provider :virtualbox do |v|
-    v.memory = 1024
-    v.cpus = 1
+    v.memory = 1800
+    v.cpus = 2
   end
 
   config.vm.provision :shell, privileged: true, inline: $install_common_tools
@@ -56,9 +56,11 @@ SCRIPT
 $provision_master_node = <<-SHELL
 OUTPUT_FILE=/vagrant/join.sh
 rm -rf $OUTPUT_FILE
+KUBECONFIG=/etc/kubernetes/admin.conf
 
 # Start cluster
-sudo kubeadm init --apiserver-advertise-address=10.0.0.10 --pod-network-cidr=10.244.0.0/16 | grep "kubeadm join" > ${OUTPUT_FILE}
+sudo kubeadm init --apiserver-advertise-address=10.0.0.10 --pod-network-cidr=10.244.0.0/16
+sudo kubeadm token create --print-join-command > ${OUTPUT_FILE}
 chmod +x $OUTPUT_FILE
 
 # Configure kubectl
@@ -70,9 +72,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 echo 'Environment="KUBELET_EXTRA_ARGS=--node-ip=10.0.0.10"' | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 # Configure flannel
-curl -o kube-flannel.yml https://raw.githubusercontent.com/coreos/flannel/v0.9.1/Documentation/kube-flannel.yml
-sed -i.bak 's|"/opt/bin/flanneld",|"/opt/bin/flanneld", "--iface=enp0s8",|' kube-flannel.yml
-kubectl create -f kube-flannel.yml
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
 sudo systemctl daemon-reload
 sudo systemctl restart kubelet
