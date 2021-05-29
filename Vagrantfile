@@ -11,6 +11,8 @@ Vagrant.configure("2") do |config|
     master.vm.hostname = "master"
     master.vm.network :private_network, ip: "10.0.0.10"
     master.vm.provision :shell, privileged: false, inline: $provision_master_node
+    master.vm.network "forwarded_port", guest: 8080, host: 8080
+
   end
 
   %w{worker1 worker2}.each_with_index do |name, i|
@@ -19,11 +21,11 @@ Vagrant.configure("2") do |config|
       worker.vm.hostname = name
       worker.vm.network :private_network, ip: "10.0.0.#{i + 11}"
       worker.vm.provision :shell, privileged: false, inline: <<-SHELL
-sudo /vagrant/join.sh
-echo 'Environment="KUBELET_EXTRA_ARGS=--node-ip=10.0.0.#{i + 11}"' | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-sudo systemctl daemon-reload
-sudo systemctl restart kubelet
-SHELL
+      sudo /vagrant/join.sh
+      echo 'Environment="KUBELET_EXTRA_ARGS=--node-ip=10.0.0.#{i + 11}"' | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+      sudo systemctl daemon-reload
+      sudo systemctl restart kubelet
+       SHELL
     end
   end
 
@@ -71,7 +73,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # Fix kubelet IP
 echo 'Environment="KUBELET_EXTRA_ARGS=--node-ip=10.0.0.10"' | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
-# Configure flannel
+# Configure Calico
 kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
 sudo systemctl daemon-reload
